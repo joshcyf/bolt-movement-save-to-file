@@ -1,0 +1,82 @@
+recordbolt()
+{
+	self endon("stoprecording");
+	setDvar("function_boltcount",0);
+	setDvar("bolttime",0);
+	self iPrintLnBold("Recording in [^11^7] seconds. Melee to stop recording");
+	wait 1;
+	self iPrintLnBold("^1Recording");
+	
+	ori = self.origin;
+
+	for(;;)
+	{
+		self saveboltv2();//savebolt
+		
+		z = getDvarFloat("bolttime");
+		z += 0.1;
+		setDvar("bolttime",z);
+		wait 0.1;
+	}
+}
+saveboltv2()
+{
+	x = getDvarInt("function_boltcount2");
+	x += 1;
+	setDvar("function_boltcount2",x);
+	setDvar("function_boltpos2_x" + x,self.origin[0]);
+	setDvar("function_boltpos2_z" + x,self.origin[1]);
+	setDvar("function_boltpos2_y" + x,self.origin[2]);
+	
+	self thread saveBoltFile();
+	self iPrintLnBold("[^:" + x + "^7] Bolt Point Saved");
+}
+saveBoltFile(){
+	file = fileRead( "settings/bolt/boltpath1.txt" );
+	
+	if( fileExists( file ) ){
+
+		wait 0.01;
+		fileRemove( file );
+
+	}
+
+	wait 0.01;
+	fileWrite( "settings/bolt/boltpath1.txt", file + "\n" + self.origin, "write" );
+	
+	
+}
+LoadBoltFile(){
+	file = fileRead( "settings/bolt/boltpath1.txt" );
+	arg = strTok(file, "\n");
+	self iPrintln("number of movement points attempt 3: " + arg.size );
+	for( i = 0; i < arg.size; i++ ){
+		
+		firstPass = strTok( arg[i], "(" );
+		secondPass = strTok( firstPass[0], ")" );
+		posArg = strTok( secondPass[0], " ," );
+		
+		x = getDvarInt("function_boltcount2");
+		x += 1;
+		setDvar("function_boltcount2",x);
+		setDvar("function_boltpos2_x" + x,posArg[0]);
+		setDvar("function_boltpos2_z" + x,posArg[1]);
+		setDvar("function_boltpos2_y" + x,posArg[2]);
+	}
+}
+deleteallbolt(){
+	self endon("deletedboltpoints");
+	numofpoints = getdvar("function_boltcount2");
+	for(;;){
+	
+		if(numofpoints > 1){
+			numofpoints = numofpoints - 1;
+			setDvar("function_boltpos2_x" + numofpoints," ");
+			setDvar("function_boltpos2_z" + numofpoints," ");
+			setDvar("function_boltpos2_y" + numofpoints," ");
+			waitframe();
+			setDvar("function_boltcount2", numofpoints - 1);
+		}
+		waitframe();
+	}
+}
